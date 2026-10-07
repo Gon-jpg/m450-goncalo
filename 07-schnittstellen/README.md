@@ -79,18 +79,18 @@ Angepasste Tests in `AddressComparatorTest`:
   Richtung) und `identicalAddressesReturnZero`, da "Hans Meier" und "Peter Meier" jetzt nicht
   mehr gleich sind.
 * `nullLastNameThrowsException` ersetzt durch `nullLastnameSortsFirst`.
-* Neu: `sameLastAndFirstnameSortsById`.
+* Neu: `sameLastAndFirstnameSortsById` und `nullFirstnameSortsFirstWithSameLastname`
+  (gleicher Nachname, `null`-Vorname wird zuerst einsortiert).
 
-Bekannte Lücke: `null`-Vornamen werden durch `nullsFirst` ebenfalls behandelt, dafür existiert
-aber noch kein eigener Test. `AddressServiceTest` bleibt unverändert grün (Meier vor Zbinden).
+`AddressServiceTest` bleibt unverändert grün (Meier vor Zbinden).
 
 Ergebnis:
 
 ```
 Tests run: 3, Failures: 0, Errors: 0, Skipped: 0 -- in ch.tbz.m450.repository.AddressTest
-Tests run: 7, Failures: 0, Errors: 0, Skipped: 0 -- in ch.tbz.m450.util.AddressComparatorTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0 -- in ch.tbz.m450.util.AddressComparatorTest
 Tests run: 4, Failures: 0, Errors: 0, Skipped: 0 -- in ch.tbz.m450.controller.AddressControllerTest
 Tests run: 4, Failures: 0, Errors: 0, Skipped: 0 -- in ch.tbz.m450.service.AddressServiceTest
-Tests run: 18, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 19, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```

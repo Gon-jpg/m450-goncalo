@@ -67,4 +67,12 @@ class AddressComparatorTest {
         assertTrue(comparator.compare(noLastname, meier) < 0);
         assertTrue(comparator.compare(meier, noLastname) > 0);
     }
+
+    @Test
+    void nullFirstnameSortsFirstWithSameLastname() {
+        Address noFirstname = new Address(6, null, "Meier", "0796666666", new Date());
+
+        assertTrue(comparator.compare(noFirstname, meier) < 0);
+        assertTrue(comparator.compare(meier, noFirstname) > 0);
+    }
 }
