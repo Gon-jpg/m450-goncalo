@@ -21,13 +21,11 @@ public class ShoppingListService {
                 continue;
             }
             for (Ingredient ingredient : recipe.getIngredients()) {
-                String key = ingredient.getName().trim().toLowerCase() + "|" + ingredient.getUnit();
-                Ingredient existing = merged.get(key);
-                int amount = existing == null
-                        ? ingredient.getAmount()
-                        : existing.getAmount() + ingredient.getAmount();
-                String name = existing == null ? ingredient.getName().trim() : existing.getName();
-                merged.put(key, new Ingredient(null, name, "", ingredient.getUnit(), amount));
+                String name = ingredient.getName().trim();
+                merged.merge(name.toLowerCase() + "|" + ingredient.getUnit(),
+                        new Ingredient(null, name, "", ingredient.getUnit(), ingredient.getAmount()),
+                        (first, next) -> new Ingredient(null, first.getName(), "", first.getUnit(),
+                                first.getAmount() + next.getAmount()));
             }
         }
 
