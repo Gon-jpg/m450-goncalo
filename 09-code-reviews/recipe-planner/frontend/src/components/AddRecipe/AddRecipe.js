@@ -1,7 +1,7 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import './AddRecipe.css';
 import {Alert, Form, Button, Col, Row} from 'react-bootstrap';
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 
 import axios from "axios";
 import AddIngredient from "../AddIngredient/AddIngredient";
@@ -31,7 +31,8 @@ const toRequestBody = (formData) => ({
     name: formData.name.trim(),
     description: formData.description.trim(),
     imageUrl: formData.imageUrl.trim(),
-    ingredients: formData.ingredients.map(({name, comment, unit, amount}) => ({
+    ingredients: formData.ingredients.map(({id, name, comment, unit, amount}) => ({
+        id,
         name: name.trim(),
         comment,
         unit,
@@ -41,6 +42,7 @@ const toRequestBody = (formData) => ({
 
 function AddRecipe() {
     const navigate = useNavigate();
+    const {id} = useParams();
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -49,7 +51,36 @@ function AddRecipe() {
     })
     const [listId, setListId] = useState(1)
     const [error, setError] = useState(null)
+    const [loading, setLoading] = useState(!!id)
     const [saving, setSaving] = useState(false)
+
+    useEffect(() => {
+        if (!id) return
+        setLoading(true)
+        axios.get(`${baseURL}/recipe/${id}`)
+            .then(({data}) => {
+                if (!data) {
+                    setError('Recipe not found.')
+                    return
+                }
+                const ingredients = (data.ingredients || []).map((ingredient, index) => ({
+                    ...ingredient,
+                    listId: index + 1,
+                    comment: ingredient.comment ?? '',
+                }))
+                setFormData({
+                    name: data.name ?? '',
+                    description: data.description ?? '',
+                    imageUrl: data.imageUrl ?? '',
+                    ingredients,
+                })
+                setListId(ingredients.length + 1)
+            })
+            .catch((err) => setError(err.response
+                ? `Loading the recipe failed (status ${err.response.status}).`
+                : 'Loading the recipe failed. Is the backend running?'))
+            .finally(() => setLoading(false))
+    }, [id])
 
     const handleChange = (field) => (e) => setFormData({...formData, [field]: e.target.value});
 
@@ -85,7 +116,10 @@ function AddRecipe() {
         }
         setError(null)
         setSaving(true)
-        axios.post(baseURL, toRequestBody(formData))
+        const request = id
+            ? axios.put(`${baseURL}/recipe/${id}`, toRequestBody(formData))
+            : axios.post(baseURL, toRequestBody(formData))
+        request
             .then(() => navigate('/'))
             .catch((err) => {
                 setSaving(false)
@@ -106,18 +140,19 @@ function AddRecipe() {
         <>
             <div className="bg">
                 <Form className="m-3" onSubmit={handleSubmit}>
-                    <h1 className="h3 bg-dark text-bg-primary mt-2">Add Recipe</h1>
+                    <h1 className="h3 bg-dark text-bg-primary mt-2">{id ? 'Edit Recipe' : 'Add Recipe'}</h1>
+                    {loading && <p className="m-3">Loading recipe…</p>}
                     <Form.Group className="mb-1" controlId="formBasicName">
                         <Form.Label>Recipe Name:</Form.Label>
-                        <Form.Control placeholder="Name" value={formData.name} onChange={handleChange('name')}/>
+                        <Form.Control placeholder="Name" value={formData.name} onChange={handleChange('name')} disabled={loading}/>
                     </Form.Group>
                     <Form.Group className="mb-1" controlId="formBasicDescription">
                         <Form.Label>Description:</Form.Label>
-                        <Form.Control placeholder="Description" value={formData.description} onChange={handleChange('description')}/>
+                        <Form.Control placeholder="Description" value={formData.description} onChange={handleChange('description')} disabled={loading}/>
                     </Form.Group>
                     <Form.Group className="mb-1 mb-5" controlId="formBasicImageUrl">
                         <Form.Label>Image URL:</Form.Label>
-                        <Form.Control placeholder="URL" value={formData.imageUrl} onChange={handleChange('imageUrl')}/>
+                        <Form.Control placeholder="URL" value={formData.imageUrl} onChange={handleChange('imageUrl')} disabled={loading}/>
                     </Form.Group>
                     <Row>
                         <Col>Ingredient</Col>
@@ -134,10 +169,11 @@ function AddRecipe() {
                             variant='warning'
                             onClick={addIngredient}
                             className="mt-1"
+                            disabled={loading}
                         >Add Ingredient</Button>
                     </Row>
                     {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
-                    <Button variant="primary" type="submit" className="mt-3 mb-5" disabled={saving}>
+                    <Button variant="primary" type="submit" className="mt-3 mb-5" disabled={saving || loading}>
                         Submit
                     </Button>
                 </Form>
