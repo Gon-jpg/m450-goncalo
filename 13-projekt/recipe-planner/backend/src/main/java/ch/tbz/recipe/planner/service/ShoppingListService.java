@@ -17,19 +17,22 @@ public class ShoppingListService {
         Map<String, Ingredient> merged = new LinkedHashMap<>();
 
         for (Recipe recipe : recipes) {
+            if (recipe.getIngredients() == null) {
+                continue;
+            }
             for (Ingredient ingredient : recipe.getIngredients()) {
                 String key = ingredient.getName().trim().toLowerCase() + "|" + ingredient.getUnit();
                 Ingredient existing = merged.get(key);
                 int amount = existing == null
                         ? ingredient.getAmount()
                         : existing.getAmount() + ingredient.getAmount();
-                String name = existing == null ? ingredient.getName() : existing.getName();
+                String name = existing == null ? ingredient.getName().trim() : existing.getName();
                 merged.put(key, new Ingredient(null, name, "", ingredient.getUnit(), amount));
             }
         }
 
         List<Ingredient> result = new ArrayList<>(merged.values());
-        result.sort(Comparator.comparing(Ingredient::getName));
+        result.sort(Comparator.comparing(Ingredient::getName, String.CASE_INSENSITIVE_ORDER));
         return result;
     }
 }
