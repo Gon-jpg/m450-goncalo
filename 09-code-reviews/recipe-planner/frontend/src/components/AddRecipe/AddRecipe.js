@@ -12,13 +12,16 @@ const validate = (formData) => {
     if (formData.name.trim() === '') {
         return 'Recipe name is required.';
     }
+    if (formData.ingredients.length === 0) {
+        return 'Add at least one ingredient.';
+    }
     for (const ingredient of formData.ingredients) {
         if (ingredient.name.trim() === '') {
             return 'Every ingredient needs a name.';
         }
         const amount = Number(ingredient.amount);
-        if (!Number.isInteger(amount) || amount < 1) {
-            return `Quantity of "${ingredient.name}" must be a whole number of at least 1.`;
+        if (!Number.isInteger(amount) || amount < 1 || amount > 2147483647) {
+            return `Quantity of "${ingredient.name}" must be a whole number between 1 and 2147483647.`;
         }
     }
     return null;
@@ -26,8 +29,8 @@ const validate = (formData) => {
 
 const toRequestBody = (formData) => ({
     name: formData.name.trim(),
-    description: formData.description,
-    imageUrl: formData.imageUrl,
+    description: formData.description.trim(),
+    imageUrl: formData.imageUrl.trim(),
     ingredients: formData.ingredients.map(({name, comment, unit, amount}) => ({
         name: name.trim(),
         comment,
@@ -46,6 +49,7 @@ function AddRecipe() {
     })
     const [listId, setListId] = useState(1)
     const [error, setError] = useState(null)
+    const [saving, setSaving] = useState(false)
 
     const handleChange = (field) => (e) => setFormData({...formData, [field]: e.target.value});
 
@@ -80,9 +84,15 @@ function AddRecipe() {
             return
         }
         setError(null)
+        setSaving(true)
         axios.post(baseURL, toRequestBody(formData))
             .then(() => navigate('/'))
-            .catch(() => setError('Saving the recipe failed. Is the backend running?'))
+            .catch((err) => {
+                setSaving(false)
+                setError(err.response
+                    ? `Saving the recipe failed (status ${err.response.status}).`
+                    : 'Saving the recipe failed. Is the backend running?')
+            })
     }
 
     const renderIngredients = formData.ingredients.map(ingredient => <AddIngredient
@@ -127,7 +137,7 @@ function AddRecipe() {
                         >Add Ingredient</Button>
                     </Row>
                     {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
-                    <Button variant="primary" type="submit" className="mt-3 mb-5">
+                    <Button variant="primary" type="submit" className="mt-3 mb-5" disabled={saving}>
                         Submit
                     </Button>
                 </Form>
