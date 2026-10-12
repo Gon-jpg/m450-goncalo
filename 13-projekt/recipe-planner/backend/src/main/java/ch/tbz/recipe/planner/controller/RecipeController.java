@@ -33,7 +33,9 @@ public class RecipeController {
 
     @GetMapping("/api/recipes/recipe/{recipeId}")
     public ResponseEntity<Recipe> getRecipe(@PathVariable UUID recipeId) {
-        return new ResponseEntity<>(service.getRecipeById(recipeId), HttpStatus.OK);
+        return service.getRecipeById(recipeId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping(value = "/api/recipes")

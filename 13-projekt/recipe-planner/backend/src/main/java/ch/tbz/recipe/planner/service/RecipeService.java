@@ -7,6 +7,7 @@ import ch.tbz.recipe.planner.domain.Recipe;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -26,8 +27,8 @@ public class RecipeService {
         return recipesEntities.stream().map(mapper::entityToDomain).toList();
     }
 
-    public Recipe getRecipeById(UUID recipeId) {
-        return mapper.entityToDomain(repository.findById(recipeId).orElse(null));
+    public Optional<Recipe> getRecipeById(UUID recipeId) {
+        return repository.findById(recipeId).map(mapper::entityToDomain);
     }
 
     public Recipe addRecipe(Recipe recipe) {
