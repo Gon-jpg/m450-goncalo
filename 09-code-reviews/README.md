@@ -79,7 +79,7 @@ Unser Review (Gonçalo) am Code:
 
 ## Auswertung der Review-Punkte
 
-- **Umzusetzen (13):** Add: 5 · Edit-Backend: 4 · Edit-Frontend: 4.
+- **Umgesetzt (13):** Add: 5 · Edit-Backend: 4 · Edit-Frontend: 4 — je ein Commit pro Branch, PRs #1–#3 gemergt.
 - **Bewusst nicht (1):** `existing` nur als Existenzcheck (Stil, funktioniert).
 - **Zur Kenntnis (1):** zurückgezogener `type="button"`-Punkt.
 - Reine Stil-/Randpunkte (eigene frühere Notizen: `min=1 step=1` blockiert 0/2.5, fehlendes `prop-types`, unbenutzter `UNITS`-Export, doppeltes `mb-1 mb-5`) gehen als Follow-up in einen eigenen PR, nicht in diesen Review-Umfang.
