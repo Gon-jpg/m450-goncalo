@@ -1,50 +1,69 @@
 import React, {useState} from 'react';
 import './AddRecipe.css';
-import { useForm } from "react-hook-form";
-import {Form, Button, Col, Row} from 'react-bootstrap';
+import {Alert, Form, Button, Col, Row} from 'react-bootstrap';
+import {useNavigate} from "react-router-dom";
 
 import axios from "axios";
 import AddIngredient from "../AddIngredient/AddIngredient";
 
+const baseURL = "http://localhost:8080/api/recipes";
+
+const validate = (formData) => {
+    if (formData.name.trim() === '') {
+        return 'Recipe name is required.';
+    }
+    for (const ingredient of formData.ingredients) {
+        if (ingredient.name.trim() === '') {
+            return 'Every ingredient needs a name.';
+        }
+        const amount = Number(ingredient.amount);
+        if (!Number.isInteger(amount) || amount < 1) {
+            return `Quantity of "${ingredient.name}" must be a whole number of at least 1.`;
+        }
+    }
+    return null;
+};
+
+const toRequestBody = (formData) => ({
+    name: formData.name.trim(),
+    description: formData.description,
+    imageUrl: formData.imageUrl,
+    ingredients: formData.ingredients.map(({name, comment, unit, amount}) => ({
+        name: name.trim(),
+        comment,
+        unit,
+        amount: Number(amount),
+    })),
+});
+
 function AddRecipe() {
-    const [ ingredients, setIngredients ] = useState([])
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        "name": '',
-        "description": '',
-        "imageUrl": '',
-        "ingredients": [],
-        "id": null
+        name: '',
+        description: '',
+        imageUrl: '',
+        ingredients: [],
     })
-
     const [listId, setListId] = useState(1)
+    const [error, setError] = useState(null)
 
-    const {
-        register,
-        handleSubmit,
-        watch,
-        formState: {errors},
-    } = useForm()
+    const handleChange = (field) => (e) => setFormData({...formData, [field]: e.target.value});
 
     const addIngredient = () => {
-
-        setFormData(({...formData, ingredients: [
-                ...formData.ingredients, {
-                    listId: listId,
-                    ingredient: '',
-                    unit: 'PIECE',
-                    quantity: ''
-                }
-            ]}))
-        setListId(listId + 1)
-
-    }
-    const updateIngredient = (ingredientObj) => {
-        const updatedIngredients = formData.ingredients.map((ingredient) => {
-            if (ingredient.listId === ingredientObj.listId) {
-                return ingredientObj
-            }
-            return ingredient
+        setFormData({
+            ...formData,
+            ingredients: [
+                ...formData.ingredients,
+                {listId: listId, name: '', unit: 'PIECE', amount: '', comment: ''}
+            ]
         })
+        setListId(listId + 1)
+    }
+
+    const updateIngredient = (ingredientObj) => {
+        const updatedIngredients = formData.ingredients.map((ingredient) =>
+            ingredient.listId === ingredientObj.listId ? ingredientObj : ingredient
+        )
         setFormData({...formData, ingredients: updatedIngredients})
     }
 
@@ -53,11 +72,22 @@ function AddRecipe() {
         setFormData({...formData, ingredients: updatedIngredients})
     }
 
+    const handleSubmit = (e) => {
+        e.preventDefault()
+        const validationError = validate(formData)
+        if (validationError) {
+            setError(validationError)
+            return
+        }
+        setError(null)
+        axios.post(baseURL, toRequestBody(formData))
+            .then(() => navigate('/'))
+            .catch(() => setError('Saving the recipe failed. Is the backend running?'))
+    }
+
     const renderIngredients = formData.ingredients.map(ingredient => <AddIngredient
         key={ingredient.listId}
         ingredient={ingredient}
-        ingredients={ingredients}
-        listId={listId - 1}
         updateIngredient={updateIngredient}
         removeIngredient={removeIngredient}
     />)
@@ -65,28 +95,28 @@ function AddRecipe() {
     return (
         <>
             <div className="bg">
-                <div className="m-3">
+                <Form className="m-3" onSubmit={handleSubmit}>
                     <h1 className="h3 bg-dark text-bg-primary mt-2">Add Recipe</h1>
                     <Form.Group className="mb-1" controlId="formBasicName">
                         <Form.Label>Recipe Name:</Form.Label>
-                        <Form.Control placeholder="Name"/>
-                    </Form.Group><Form.Group className="mb-1" controlId="formBasicDescription">
+                        <Form.Control placeholder="Name" value={formData.name} onChange={handleChange('name')}/>
+                    </Form.Group>
+                    <Form.Group className="mb-1" controlId="formBasicDescription">
                         <Form.Label>Description:</Form.Label>
-                        <Form.Control placeholder="Description"/>
-                    </Form.Group><Form.Group className="mb-1 mb-5" controlId="formBasicImageUrl">
+                        <Form.Control placeholder="Description" value={formData.description} onChange={handleChange('description')}/>
+                    </Form.Group>
+                    <Form.Group className="mb-1 mb-5" controlId="formBasicImageUrl">
                         <Form.Label>Image URL:</Form.Label>
-                        <Form.Control placeholder="URL"/>
+                        <Form.Control placeholder="URL" value={formData.imageUrl} onChange={handleChange('imageUrl')}/>
                     </Form.Group>
                     <Row>
                         <Col>Ingredient</Col>
                         <Col>Unit</Col>
-                        <Col>Quanity</Col>
+                        <Col>Quantity</Col>
+                        <Col>Comment</Col>
                         <Col xs={1}></Col>
                     </Row>
                     <hr/>
-                    <Row>
-                        <br></br>
-                    </Row>
                     {renderIngredients}
                     <Row>
                         <br></br>
@@ -94,15 +124,14 @@ function AddRecipe() {
                             variant='warning'
                             onClick={addIngredient}
                             className="mt-1"
-                            >Add Ingredient</Button>
+                        >Add Ingredient</Button>
                     </Row>
-                    <Button variant="primary"  type="submit" className="mb-5">
+                    {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
+                    <Button variant="primary" type="submit" className="mt-3 mb-5">
                         Submit
                     </Button>
-                </div>
-
+                </Form>
             </div>
-
         </>
     )
 }
