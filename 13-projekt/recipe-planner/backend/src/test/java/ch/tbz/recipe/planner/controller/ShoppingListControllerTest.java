@@ -3,6 +3,7 @@ package ch.tbz.recipe.planner.controller;
 import ch.tbz.recipe.planner.domain.Ingredient;
 import ch.tbz.recipe.planner.domain.Recipe;
 import ch.tbz.recipe.planner.domain.Unit;
+import ch.tbz.recipe.planner.mapper.RecipeEntityMapper;
 import ch.tbz.recipe.planner.repository.RecipeRepository;
 import ch.tbz.recipe.planner.service.RecipeService;
 import ch.tbz.recipe.planner.service.ShoppingListService;
@@ -41,6 +42,9 @@ class ShoppingListControllerTest {
 
     @MockBean
     private RecipeRepository repository;
+
+    @MockBean
+    private RecipeEntityMapper mapper;
 
     private Recipe recipe(String name) {
         return new Recipe(UUID.randomUUID(), name, "", "", List.of());
