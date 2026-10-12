@@ -104,6 +104,8 @@ Statt Stages wie in GitLab verwendet GitHub Actions Jobs, die mit `needs:` verke
 GitHub Actions pipeline" hat die Pipeline automatisch ausgelöst
 ([Run 38250875800](https://github.com/Gon-jpg/m450-goncalo/actions/runs/38250875800)):
 
+![Pipeline-Run](pipeline-run.png)
+
 ```
 ✓ main CI · 38250875800
 Triggered via push
