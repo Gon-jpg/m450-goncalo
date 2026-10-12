@@ -67,8 +67,50 @@ class RecipeControllerUpdateTest {
 
     @Test
     void unknownIdReturns404() {
-        ResponseEntity<Recipe> response = put(UUID.randomUUID(), create());
+        Recipe empty = new Recipe(null, "Empty", "", "", new ArrayList<>());
+
+        ResponseEntity<Recipe> response = put(UUID.randomUUID(), empty);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void updateWithoutIngredientsDoesNotFail() {
+        Recipe created = create();
+        created.setName("No Ingredients");
+        created.setIngredients(null);
+
+        ResponseEntity<Recipe> response = put(created.getId(), created);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void updateRemovesIngredient() {
+        Recipe created = create();
+        created.setIngredients(new ArrayList<>());
+
+        ResponseEntity<Recipe> response = put(created.getId(), created);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        Recipe loaded = rest.getForObject("/api/recipes/recipe/" + created.getId(), Recipe.class);
+        assertEquals(0, loaded.getIngredients().size());
+    }
+
+    @Test
+    void foreignIngredientIdDoesNotMoveTheIngredient() {
+        Recipe first = create();
+        Recipe second = create();
+        UUID foreignId = first.getIngredients().get(0).getId();
+
+        Recipe body = new Recipe(null, "Second", "", "", new ArrayList<>(List.of(
+                new Ingredient(foreignId, "Milk", "", Unit.LITRE, 1))));
+
+        ResponseEntity<Recipe> response = put(second.getId(), body);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        Recipe firstLoaded = rest.getForObject("/api/recipes/recipe/" + first.getId(), Recipe.class);
+        assertEquals(1, firstLoaded.getIngredients().size());
+        assertEquals(foreignId, firstLoaded.getIngredients().get(0).getId());
     }
 }
