@@ -16,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -23,7 +24,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -68,7 +68,7 @@ class RecipeControllerTest {
 
     @Test
     void getRecipeByIdReturns200AndRecipe() throws Exception {
-        when(service.getRecipeById(soup.getId())).thenReturn(soup);
+        when(service.getRecipeById(soup.getId())).thenReturn(Optional.of(soup));
 
         mockMvc.perform(get("/api/recipes/recipe/{id}", soup.getId()))
                 .andExpect(status().isOk())
@@ -91,12 +91,11 @@ class RecipeControllerTest {
     }
 
     @Test
-    void getRecipeWithUnknownIdCurrentlyReturns200WithEmptyBody() throws Exception {
+    void getRecipeWithUnknownIdReturns404() throws Exception {
         UUID unknownId = UUID.randomUUID();
-        when(service.getRecipeById(unknownId)).thenReturn(null);
+        when(service.getRecipeById(unknownId)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/recipes/recipe/{id}", unknownId))
-                .andExpect(status().isOk())
-                .andExpect(content().string(""));
+                .andExpect(status().isNotFound());
     }
 }
