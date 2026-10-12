@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    paths:
+      - '10-ci-cd-pipeline/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    paths:
+      - '10-ci-cd-pipeline/**'
+      - '.github/workflows/ci.yml'
+
+defaults:
+  run:
+    working-directory: 10-ci-cd-pipeline/recipe-planner/backend
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: 10-ci-cd-pipeline/recipe-planner/backend/pom.xml
+      - name: Compile
+        run: ./mvnw -B -DskipTests compile
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: 10-ci-cd-pipeline/recipe-planner/backend/pom.xml
+      - name: Run tests
+        run: ./mvnw -B test
+      - name: Upload test and coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            10-ci-cd-pipeline/recipe-planner/backend/target/surefire-reports
+            10-ci-cd-pipeline/recipe-planner/backend/target/site/jacoco
+      - name: Publish test report
+        if: always()
+        uses: mikepenz/action-junit-report@v4
+        with:
+          report_paths: '**/surefire-reports/TEST-*.xml'
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: 10-ci-cd-pipeline/recipe-planner/backend/pom.xml
+      - name: Build jar
+        run: ./mvnw -B -DskipTests package
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: recipe-planner-jar
+          path: 10-ci-cd-pipeline/recipe-planner/backend/target/*.jar
