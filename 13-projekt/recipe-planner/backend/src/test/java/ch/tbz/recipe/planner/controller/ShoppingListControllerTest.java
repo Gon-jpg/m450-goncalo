@@ -16,10 +16,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -54,8 +56,8 @@ class ShoppingListControllerTest {
     void createLoadsRecipesInBodyOrderAndReturnsShoppingList() throws Exception {
         Recipe soup = recipe("Soup");
         Recipe pasta = recipe("Pasta");
-        when(recipeService.getRecipeById(soup.getId())).thenReturn(soup);
-        when(recipeService.getRecipeById(pasta.getId())).thenReturn(pasta);
+        when(recipeService.getRecipeById(soup.getId())).thenReturn(Optional.of(soup));
+        when(recipeService.getRecipeById(pasta.getId())).thenReturn(Optional.of(pasta));
         when(shoppingListService.create(anyList())).thenReturn(List.of(
                 new Ingredient(null, "Carrot", "", Unit.PIECE, 3),
                 new Ingredient(null, "Flour", "", Unit.GRAMM, 500)));
@@ -80,18 +82,15 @@ class ShoppingListControllerTest {
     }
 
     @Test
-    void unknownIdIsIgnored() throws Exception {
-        Recipe soup = recipe("Soup");
+    void unknownIdReturns404() throws Exception {
         UUID unknownId = UUID.randomUUID();
-        when(recipeService.getRecipeById(soup.getId())).thenReturn(soup);
-        when(recipeService.getRecipeById(unknownId)).thenReturn(null);
-        when(shoppingListService.create(anyList())).thenReturn(List.of());
+        when(recipeService.getRecipeById(unknownId)).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/shopping-list")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(List.of(unknownId, soup.getId()))))
-                .andExpect(status().isOk());
+                        .content(objectMapper.writeValueAsString(List.of(unknownId))))
+                .andExpect(status().isNotFound());
 
-        verify(shoppingListService).create(List.of(soup));
+        verifyNoInteractions(shoppingListService);
     }
 }
