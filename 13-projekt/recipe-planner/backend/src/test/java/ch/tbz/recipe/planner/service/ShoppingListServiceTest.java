@@ -102,4 +102,37 @@ class ShoppingListServiceTest {
 
         assertThat(result).extracting(Ingredient::getName).containsExactly("Apple", "Milk", "Tomato");
     }
+
+    @Test
+    void firstNameIsTrimmed() {
+        Recipe recipe = recipe("A", ingredient("  Potato ", Unit.GRAMM, 100));
+
+        List<Ingredient> result = service.create(List.of(recipe));
+
+        assertThat(result).extracting(Ingredient::getName).containsExactly("Potato");
+    }
+
+    @Test
+    void sortIgnoresCase() {
+        Recipe recipe = recipe("Mixed",
+                ingredient("zucchini", Unit.PIECE, 1),
+                ingredient("apple", Unit.PIECE, 1),
+                ingredient("Milk", Unit.LITRE, 1));
+
+        List<Ingredient> result = service.create(List.of(recipe));
+
+        assertThat(result).extracting(Ingredient::getName).containsExactly("apple", "Milk", "zucchini");
+    }
+
+    @Test
+    void recipeWithNullIngredientsIsSkipped() {
+        Recipe broken = new Recipe(UUID.randomUUID(), "Broken", "", "", null);
+        Recipe soup = recipe("Soup", ingredient("Carrot", Unit.PIECE, 3));
+
+        List<Ingredient> result = service.create(List.of(broken, soup));
+
+        assertThat(result)
+                .extracting(Ingredient::getName, Ingredient::getUnit, Ingredient::getAmount)
+                .containsExactly(tuple("Carrot", Unit.PIECE, 3));
+    }
 }
