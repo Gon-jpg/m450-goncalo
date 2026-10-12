@@ -1,0 +1,43 @@
+name: Deployment environment
+
+on:
+  push:
+    paths:
+      - '11-deployment-environment/**'
+      - '.github/workflows/deploy-env.yml'
+  pull_request:
+    paths:
+      - '11-deployment-environment/**'
+      - '.github/workflows/deploy-env.yml'
+
+jobs:
+  compose-smoke-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 11-deployment-environment
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start testing environment
+        run: docker compose up -d --build
+      - name: Wait until backend and frontend answer
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fs http://localhost:8080/api/recipes > /dev/null && curl -fs http://localhost:3000 > /dev/null; then
+              echo "Both services are up after about $((i * 5)) seconds"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Services did not become ready in time"
+          exit 1
+      - name: Smoke test
+        run: |
+          curl -fs http://localhost:8080/api/recipes | head -c 300; echo
+          curl -fs http://localhost:3000/planer | grep -q 'id="root"'
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs
+      - name: Tear down
+        if: always()
+        run: docker compose down
