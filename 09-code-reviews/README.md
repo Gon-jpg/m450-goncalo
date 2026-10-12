@@ -77,9 +77,9 @@ Unser Review (Gonçalo) am Code:
 4. **Gegenseitiges Review findet die gleichen Muster auf beiden Seiten.** Add vs. Edit, GET vs. PUT: dieselben Fehler tauchen unabhängig voneinander auf, was die Reviews umso wertvoller macht.
 5. **Review ist konstruktiv und korrigiert sich selbst.** Jan hat einen eigenen Punkt zurückgenommen; wir haben Punkte als „reine Stilfrage" bewusst nicht umgesetzt.
 
-## Umsetzungsstand
+## Auswertung der Review-Punkte
 
-- **Umsetzen (13 Punkte):** Add: 5 · Edit-Backend: 4 · Edit-Frontend: 4.
+- **Umzusetzen (13):** Add: 5 · Edit-Backend: 4 · Edit-Frontend: 4.
 - **Bewusst nicht (1):** `existing` nur als Existenzcheck (Stil, funktioniert).
 - **Zur Kenntnis (1):** zurückgezogener `type="button"`-Punkt.
-- Reine Stil-/Randpunkte (eigene frühere Notizen: `min=1 step=1` blockiert 0/2.5, fehlendes `prop-types`, unbenutzter `UNITS`-Export, doppeltes `mb-1 mb-5`) gehen als Follow-up in den nächsten PR, nicht in diesen Review-Umfang.
+- Reine Stil-/Randpunkte (eigene frühere Notizen: `min=1 step=1` blockiert 0/2.5, fehlendes `prop-types`, unbenutzter `UNITS`-Export, doppeltes `mb-1 mb-5`) gehen als Follow-up in einen eigenen PR, nicht in diesen Review-Umfang.
