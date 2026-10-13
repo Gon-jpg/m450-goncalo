@@ -40,15 +40,16 @@ Konkrete Momente, in denen ein Test etwas gezeigt hat:
 
 ### Was würde ich im Berufsalltag verändern?
 
-* CI in jedem Repository einrichten, damit nichts mit einem roten Build gemergt wird.
-* Vor jedem Merge ein Review verlangen.
+* Im Betrieb wenig — dort gibt es CI ohnehin in jedem Repository.
+* Für eigene Projekte: CI in jedem Repository einrichten, damit nichts mit einem roten Build gemergt wird.
+* Vor jedem Merge ein Review verlangen — sinnvoll, sobald man nicht allein arbeitet.
 
 ### Würde ich alles gleich beibehalten?
 
-Nein. Soweit ich weiss, fehlen beide Punkte bei uns im Moment.
+Nein. In Projekten, in denen ich nicht allein arbeite, würde ich CI und ein Review vor dem Merge verlangen. Arbeite ich allein, würde ich darauf verzichten.
 
 ### Nächste Schritte
 
 1. GitHub Actions in meinem eigenen Projekt einrichten, mit Build und Tests bei jedem Push.
 2. Playwright-Tests in diese Pipeline aufnehmen.
-3. Mit meinem Team die Regel "kein Merge ohne Review" vereinbaren.
+3. In Team-Projekten die Regel "kein Merge ohne Review" vereinbaren.
