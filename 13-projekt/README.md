@@ -2,7 +2,7 @@
 
 ## 1. Planung
 
-Vier Feature-PRs als Stapel (jeder baut auf dem vorherigen auf), je ein Branch, Review durch Jan vor dem Merge.
+Vier Feature-PRs als Stapel (jeder baut auf dem vorherigen auf), je ein Branch. Review durch Jan ist für #4–#7 angefragt, aber noch offen.
 
 | PR | Branch | Inhalt | Test-Ansatz | Status |
 |----|--------|--------|-------------|--------|
@@ -73,7 +73,7 @@ Gesamt: 27 Backend-Tests und 2 Frontend-Tests grün (Stand `main`).
 | R9 | Endpoint: leere Liste → `[]` | `emptyBodyGivesEmptyList` |
 | R10 | Endpoint: unbekannte ID → 404, keine Einkaufsliste berechnet | `unknownIdReturns404` |
 
-Der Integrationstest deckt R1–R3 zusätzlich gegen die echte H2-Datenbank ab (`ShoppingListIntegrationTest`). `GET /api/recipes/recipe/{id}` mit unbekannter ID gibt ebenfalls 404 (`RecipeControllerTest.getRecipeWithUnknownIdReturns404`).
+Der Integrationstest deckt R1–R2 zusätzlich gegen die echte H2-Datenbank ab (`ShoppingListIntegrationTest`). `GET /api/recipes/recipe/{id}` mit unbekannter ID gibt ebenfalls 404 (`RecipeControllerTest.getRecipeWithUnknownIdReturns404`).
 
 ### Bekannte Lücken
 
